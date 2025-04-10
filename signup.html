@@ -64,6 +64,16 @@
             background-color: #45a049;
         }
     </style>
+    <!-- Trackdesk tracker begin -->
+    <script async src="//cdn.trackdesk.com/tracking.js"></script>
+    <script>
+        (function (t, d, k) { (t[k] = t[k] || []).push(d); t[d] = t[d] || t[k].f || function () { (t[d].q = t[d].q || []).push(arguments) } })(window, "trackdesk", "TrackdeskObject");
+
+        trackdesk("neenopal", "conversion", {
+            "conversionType": "lead"
+        });
+    </script>
+    <!-- Trackdesk tracker end -->
     <script>
         // Function to get URL parameters
         function getUrlParam(param) {
@@ -89,6 +99,18 @@
 
             // In a real implementation, you'd validate the form here
 
+            // Track lead conversion
+            if (window.TrackingApi) {
+                window.TrackingApi.track('lead', {
+                    email: document.getElementById('email').value,
+                    first_name: document.getElementById('first-name').value,
+                    last_name: document.getElementById('last-name').value
+                });
+                console.log('Lead conversion sent to TrackDesk');
+            } else {
+                console.error('TrackDesk API not loaded');
+            }
+
             // Build URL for the payment page with tracking parameters
             const paymentUrl = new URL('payment.html', window.location.href);
 
@@ -106,10 +128,11 @@
                 }
             });
 
-            // Redirect to payment page
-            window.location.href = paymentUrl.href;
+            // Redirect to payment page after a short delay to ensure tracking completes
+            setTimeout(() => {
+                window.location.href = paymentUrl.href;
+            }, 300);
         }
-
         // When page loads
         window.addEventListener('DOMContentLoaded', () => {
             document.getElementById('signup-form').addEventListener('submit', handleSubmit);

@@ -46,6 +46,16 @@
             margin-top: 30px;
         }
     </style>
+    <!-- Trackdesk tracker begin -->
+    <script async src="//cdn.trackdesk.com/tracking.js"></script>
+    <script>
+        (function (t, d, k) { (t[k] = t[k] || []).push(d); t[d] = t[d] || t[k].f || function () { (t[d].q = t[d].q || []).push(arguments) } })(window, "trackdesk", "TrackdeskObject");
+
+        trackdesk("neenopal", "conversion", {
+            "conversionType": "sale"
+        });
+    </script>
+    <!-- Trackdesk tracker end -->
     <script>
         // Function to get URL parameters
         function getUrlParam(param) {
@@ -73,34 +83,20 @@
             const offerId = getTrackingParam('offer_id');
             const transactionId = getUrlParam('transaction_id');
 
-            if (clickId) {
-                console.log('Sending conversion to TrackDesk...');
+            console.log('Sending conversion to TrackDesk...');
 
-                // In a real implementation, you would make an AJAX call to your server
-                // which would then call the TrackDesk API or fire a pixel
-                // For example:
-                /*
-                fetch('https://your-server.com/trackdesk-conversion', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        click_id: clickId,
-                        aff_id: affId,
-                        offer_id: offerId,
-                        transaction_id: transactionId,
-                        amount: 49.99
-                    })
+            // TrackDesk Sale Conversion Tracking
+            if (window.TrackingApi) {
+                window.TrackingApi.track('sale', {
+                    value: 49.99,
+                    currency: 'USD',
+                    transaction_id: transactionId
                 });
-                */
-
-                // For demo purposes, we're just logging
+                console.log('Sale conversion sent to TrackDesk');
+            } else {
+                console.error('TrackDesk API not loaded');
+                // Fallback logging
                 console.log(`TrackDesk conversion: click_id=${clickId}, aff_id=${affId}, offer_id=${offerId}, transaction_id=${transactionId}`);
-
-                // In a real implementation, you could also fire a pixel
-                // const trackDeskPixel = new Image();
-                // trackDeskPixel.src = `https://postback.trackdesk.com/conversion?click_id=${clickId}&transaction_id=${transactionId}&amount=49.99`;
             }
         }
 

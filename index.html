@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Landing Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+
+        .product {
+            display: flex;
+            margin: 30px 0;
+        }
+
+        .product-image {
+            flex: 1;
+            text-align: center;
+        }
+
+        .product-info {
+            flex: 2;
+            padding: 0 20px;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+
+        .cta-button:hover {
+            background-color: #45a049;
+        }
+    </style>
+    <!-- TrackDesk tracking script would go here -->
+    <script>
+        // Function to get URL parameters
+        function getUrlParam(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
+        }
+
+        // Store tracking parameters in cookies/localStorage for later use
+        function storeTrackingParams() {
+            const trackingParams = ['aff_id', 'offer_id', 'click_id', 'sub1', 'sub2'];
+
+            trackingParams.forEach(param => {
+                const value = getUrlParam(param);
+                if (value) {
+                    localStorage.setItem(param, value);
+                    // Also set as cookie for cross-page tracking
+                    document.cookie = `${param}=${value}; path=/; max-age=2592000`; // 30 days
+                }
+            });
+        }
+
+        // Run when page loads
+        window.addEventListener('DOMContentLoaded', (event) => {
+            storeTrackingParams();
+
+            // If this were a real integration, we'd send a pixel to TrackDesk here
+            const clickId = getUrlParam('click_id');
+            if (clickId) {
+                console.log(`TrackDesk click registered: ${clickId}`);
+                // In real implementation: send a request to TrackDesk API
+            }
+        });
+    </script>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Amazing Product</h1>
+
+        <div class="product">
+            <div class="product-image">
+                <img src="/api/placeholder/300/200" alt="Product Image">
+            </div>
+            <div class="product-info">
+                <h2>Premium Subscription</h2>
+                <p>Our flagship product delivers incredible value with features that will transform your experience.</p>
+                <ul>
+                    <li>Feature 1: Amazing capability</li>
+                    <li>Feature 2: Incredible performance</li>
+                    <li>Feature 3: Outstanding results</li>
+                </ul>
+                <p><strong>Price: $49.99</strong></p>
+
+                <a href="signup.html" id="cta-button" class="cta-button">Sign Up Now</a>
+
+                <script>
+                    // Add tracking parameters to the CTA button link
+                    document.addEventListener('DOMContentLoaded', () => {
+                        const ctaButton = document.getElementById('cta-button');
+                        const currentUrl = new URL(ctaButton.href, window.location.href);
+
+                        // Append tracking parameters
+                        ['aff_id', 'offer_id', 'click_id', 'sub1', 'sub2'].forEach(param => {
+                            const value = getUrlParam(param);
+                            if (value) {
+                                currentUrl.searchParams.append(param, value);
+                            }
+                        });
+
+                        ctaButton.href = currentUrl.href;
+                    });
+                </script>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

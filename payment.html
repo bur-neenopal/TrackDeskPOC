@@ -79,6 +79,7 @@
             margin-bottom: 20px;
         }
     </style>
+    <script type="module" src="https://assets.sandbox.cello.so/attribution/latest/cello-attribution.js" async></script>
     <script>
         // Function to get URL parameters
         function getUrlParam(param) {
@@ -111,8 +112,28 @@
                 }
             });
 
-            // In a real implementation, you'd process the payment here
+            // Get customer details
+            const firstName = getUrlParam('first_name');
+            const lastName = getUrlParam('last_name');
+            const email = getUrlParam('email');
+            const fullName = `${firstName} ${lastName}`;
+
             console.log('Processing payment...');
+
+            // Generate transaction ID for conversion tracking
+            const transactionId = 'TX-' + Math.floor(Math.random() * 1000000);
+
+            // Track payment initiation with Cello
+            if (window.cello) {
+                window.cello.track('payment_initiated', {
+                    email: email,
+                    name: fullName,
+                    amount: 49.99,
+                    currency: 'USD',
+                    productName: 'Premium Subscription'
+                });
+                console.log('Payment initiation tracked with Cello');
+            }
 
             // Simulate payment processing
             setTimeout(() => {
@@ -124,9 +145,10 @@
                     confirmationUrl.searchParams.append(key, trackingParams[key]);
                 });
 
-                // Add transaction ID for conversion tracking
-                const transactionId = 'TX-' + Math.floor(Math.random() * 1000000);
+                // Add transaction ID and customer info for conversion tracking
                 confirmationUrl.searchParams.append('transaction_id', transactionId);
+                confirmationUrl.searchParams.append('email', email);
+                confirmationUrl.searchParams.append('name', fullName);
 
                 // Redirect to confirmation page
                 window.location.href = confirmationUrl.href;
@@ -134,15 +156,43 @@
         }
 
         // When page loads
-        window.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('payment-form').addEventListener('submit', handleSubmit);
+        window.addEventListener('DOMContentLoaded', async () => {
+            // Initialize Cello
+            if (window.cello) {
+                try {
+                    await window.cello.initialize({
+                        appId: 'stage-app.mokkup.ai' // Replace with your actual Cello App ID
+                    });
+                    console.log('Cello initialized successfully');
 
-            // Display customer details from previous page
+                    // Track page view
+                    window.cello.page({
+                        name: 'Payment Page'
+                    });
+
+                    // Identify user if email is available
+                    const email = getUrlParam('email');
+                    const firstName = getUrlParam('first_name');
+                    const lastName = getUrlParam('last_name');
+
+                    if (email) {
+                        window.cello.identify(email, {
+                            firstName: firstName,
+                            lastName: lastName,
+                            email: email
+                        });
+                    }
+                } catch (error) {
+                    console.error('Cello initialization failed:', error);
+                }
+            }
+
+            // Add event listeners and display customer info
+            document.getElementById('payment-form').addEventListener('submit', handleSubmit);
             document.getElementById('customer-name').textContent = getUrlParam('first_name') + ' ' + getUrlParam('last_name');
             document.getElementById('customer-email').textContent = getUrlParam('email');
         });
     </script>
-    <script type="module" src="https://assets.sandbox.cello.so/attribution/latest/cello-attribution.js" async></script>
 </head>
 
 <body>

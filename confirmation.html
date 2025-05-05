@@ -48,6 +48,7 @@
     </style>
     <!-- Trackdesk tracker begin -->
     <script async src="//cdn.trackdesk.com/tracking.js"></script>
+    <script type="module" src="https://assets.sandbox.cello.so/attribution/latest/cello-attribution.js" async></script>
     <script>
         (function (t, d, k) { (t[k] = t[k] || []).push(d); t[d] = t[d] || t[k].f || function () { (t[d].q = t[d].q || []).push(arguments) } })(window, "trackdesk", "TrackdeskObject");
 
@@ -75,15 +76,17 @@
             return getUrlParam(param) || getCookie(param) || localStorage.getItem(param);
         }
 
-        // Function to send conversion data to TrackDesk
-        function sendConversionToTrackDesk() {
+        // Function to send conversion data
+        function sendConversionData() {
             // Get all tracking parameters
             const clickId = getTrackingParam('click_id');
             const affId = getTrackingParam('aff_id');
             const offerId = getTrackingParam('offer_id');
             const transactionId = getUrlParam('transaction_id');
+            const email = getUrlParam('email');
+            const name = getUrlParam('name');
 
-            console.log('Sending conversion to TrackDesk...');
+            console.log('Sending conversion data...');
 
             // TrackDesk Sale Conversion Tracking
             if (window.TrackingApi) {
@@ -98,19 +101,69 @@
                 // Fallback logging
                 console.log(`TrackDesk conversion: click_id=${clickId}, aff_id=${affId}, offer_id=${offerId}, transaction_id=${transactionId}`);
             }
+
+            // Track purchase with Cello
+            if (window.cello) {
+                // Identify the user first
+                window.cello.identify(email, {
+                    email: email,
+                    name: name
+                });
+
+                // Track the purchase event
+                window.cello.track('purchase_completed', {
+                    email: email,
+                    name: name,
+                    orderId: transactionId,
+                    amount: 49.99,
+                    currency: 'USD',
+                    productName: 'Premium Subscription'
+                });
+                console.log('Purchase tracked with Cello');
+            }
         }
 
         // When page loads
-        window.addEventListener('DOMContentLoaded', () => {
+        window.addEventListener('DOMContentLoaded', async () => {
+            // Initialize Cello
+            if (window.cello) {
+                try {
+                    await window.cello.initialize({
+                        appId: 'stage-app.mokkup.ai' // Replace with your actual Cello App ID
+                    });
+                    console.log('Cello initialized successfully');
+
+                    // Track page view
+                    window.cello.page({
+                        name: 'Order Confirmation'
+                    });
+
+                    // Identify user if email is available
+                    const email = getUrlParam('email');
+                    if (email) {
+                        window.cello.identify(email, {
+                            email: email,
+                            name: getUrlParam('name')
+                        });
+                    }
+                } catch (error) {
+                    console.error('Cello initialization failed:', error);
+                }
+            }
+
             // Display order ID
             const orderId = getUrlParam('transaction_id') || ('ORD-' + Math.floor(Math.random() * 1000000));
             document.getElementById('order-id').textContent = orderId;
 
-            // Send conversion to TrackDesk
-            sendConversionToTrackDesk();
+            // Show customer email if available
+            if (getUrlParam('email')) {
+                document.getElementById('customer-email').textContent = getUrlParam('email');
+            }
+
+            // Send conversion data
+            sendConversionData();
         });
     </script>
-    <script type="module" src="https://assets.sandbox.cello.so/attribution/latest/cello-attribution.js" async></script>
 </head>
 
 <body>
@@ -126,6 +179,7 @@
             <p><strong>Order ID:</strong> <span id="order-id"></span></p>
             <p><strong>Product:</strong> Premium Subscription</p>
             <p><strong>Amount Paid:</strong> $49.99</p>
+            <p><strong>Email:</strong> <span id="customer-email"></span></p>
         </div>
 
         <div class="next-steps">

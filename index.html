@@ -89,7 +89,25 @@
         }
 
         // Run when page loads
-        window.addEventListener('DOMContentLoaded', (event) => {
+        window.addEventListener('DOMContentLoaded', async (event) => {
+            // Initialize Cello
+            if (window.cello) {
+                try {
+                    await window.cello.initialize({
+                        appId: 'stage-app.mokkup.ai' // Replace with your actual Cello App ID
+                    });
+                    console.log('Cello initialized successfully');
+
+                    // Track page view
+                    window.cello.page({
+                        name: 'Product Landing Page'
+                    });
+                } catch (error) {
+                    console.error('Cello initialization failed:', error);
+                }
+            }
+
+            // Store tracking parameters
             storeTrackingParams();
 
             // If this were a real integration, we'd send a pixel to TrackDesk here
@@ -137,6 +155,16 @@
                         });
 
                         ctaButton.href = currentUrl.href;
+
+                        // Track clicks on the CTA button with Cello
+                        ctaButton.addEventListener('click', (e) => {
+                            if (window.cello) {
+                                window.cello.track('cta_click', {
+                                    buttonText: 'Sign Up Now',
+                                    buttonDestination: ctaButton.href
+                                });
+                            }
+                        });
                     });
                 </script>
             </div>

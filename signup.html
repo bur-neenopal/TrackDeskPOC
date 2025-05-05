@@ -98,18 +98,36 @@
         function handleSubmit(event) {
             event.preventDefault();
 
-            // In a real implementation, you'd validate the form here
+            // Get form data
+            const email = document.getElementById('email').value;
+            const firstName = document.getElementById('first-name').value;
+            const lastName = document.getElementById('last-name').value;
 
-            // Track lead conversion
+            // Track lead conversion with TrackDesk
             if (window.TrackingApi) {
                 window.TrackingApi.track('lead', {
-                    email: document.getElementById('email').value,
-                    first_name: document.getElementById('first-name').value,
-                    last_name: document.getElementById('last-name').value
+                    email: email,
+                    first_name: firstName,
+                    last_name: lastName
                 });
                 console.log('Lead conversion sent to TrackDesk');
             } else {
                 console.error('TrackDesk API not loaded');
+            }
+
+            // Track lead with Cello
+            if (window.cello) {
+                window.cello.identify(email, {
+                    firstName: firstName,
+                    lastName: lastName,
+                    email: email
+                });
+
+                window.cello.track('lead_submitted', {
+                    email: email,
+                    name: `${firstName} ${lastName}`
+                });
+                console.log('Lead tracked with Cello');
             }
 
             // Build URL for the payment page with tracking parameters
@@ -134,9 +152,35 @@
                 window.location.href = paymentUrl.href;
             }, 300);
         }
+
         // When page loads
-        window.addEventListener('DOMContentLoaded', () => {
+        window.addEventListener('DOMContentLoaded', async () => {
+            // Initialize Cello
+            if (window.cello) {
+                try {
+                    await window.cello.initialize({
+                        appId: 'stage-app.mokkup.ai' // Replace with your actual Cello App ID
+                    });
+                    console.log('Cello initialized successfully');
+
+                    // Track page view
+                    window.cello.page({
+                        name: 'Sign Up Page'
+                    });
+                } catch (error) {
+                    console.error('Cello initialization failed:', error);
+                }
+            }
+
             document.getElementById('signup-form').addEventListener('submit', handleSubmit);
+
+            // Check for tracking parameters and update form if needed
+            const referrer = document.referrer;
+            if (referrer && window.cello) {
+                window.cello.track('form_view', {
+                    referrer: referrer
+                });
+            }
         });
     </script>
 </head>
